@@ -10,6 +10,10 @@
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
   </PropertyGroup>
+  
+  <PropertyGroup Condition="$(Configuration.StartsWith('Debug')) == 'true'">
+    <OutDir>$(SolutionDir)Builds\Server\</OutDir>
+  </PropertyGroup>
 
   <PropertyGroup>
     <PackageId>AscensionGameDev.Intersect.Server</PackageId>

@@ -9,6 +9,10 @@
 		<PublishSingleFile>true</PublishSingleFile>
 		<SelfContained>true</SelfContained>
 	</PropertyGroup>
+  
+  <PropertyGroup Condition="$(Configuration.StartsWith('Debug')) == 'true'">
+    <OutDir>$(SolutionDir)Builds\Client\</OutDir>
+  </PropertyGroup>
 
 	<PropertyGroup>
 		<PackageId>AscensionGameDev.Intersect.Client</PackageId>

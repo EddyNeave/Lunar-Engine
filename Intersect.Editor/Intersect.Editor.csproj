@@ -23,6 +23,7 @@
     <AssemblyName>Intersect Editor</AssemblyName>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <FileAlignment>512</FileAlignment>
+    <OutDir>$(SolutionDir)Builds\Editor\</OutDir>
   </PropertyGroup>
 
   <ItemGroup>
