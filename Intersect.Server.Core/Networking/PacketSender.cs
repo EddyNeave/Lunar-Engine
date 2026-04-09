@@ -111,6 +111,7 @@ public static partial class PacketSender
             player.LoginWarp();
 
             SendEntityDataTo(client.Entity, player);
+            SendVariableValues(player);
 
             //Search for login activated events and run them
             player.StartCommonEventsWithTrigger(CommonEventTrigger.Login);
@@ -2415,6 +2416,29 @@ public static partial class PacketSender
                 }
             }
         }
+    }
+    
+    public static void SendVariableValues(Player player)
+    {
+        Console.WriteLine($"SendVariableValues called for {player.Name}");
+        var values = new Dictionary<string, string>();
+
+        foreach (var descriptor in PlayerVariableDescriptor.Lookup.Values
+            .Cast<PlayerVariableDescriptor>()
+            .Where(d => !string.IsNullOrWhiteSpace(d.TextId)))
+        {
+            var variable = player.GetVariable(descriptor.Id);
+            values[descriptor.TextId] = variable?.Value?.ToString() ?? "0";
+        }
+
+        foreach (var descriptor in ServerVariableDescriptor.Lookup.Values
+            .Cast<ServerVariableDescriptor>()
+            .Where(d => !string.IsNullOrWhiteSpace(d.TextId)))
+        {
+            values[descriptor.TextId] = descriptor.Value?.ToString() ?? "0";
+        }
+
+        player.SendPacket(new VariableValuesPacket(values));
     }
 
 }

@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using Intersect.Client.Framework.General;
 using Intersect.Client.Framework.Content;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.GenericClasses;
@@ -45,6 +46,8 @@ public partial class Label : Base, ILabel, IFontProvider
     private string? _formatString;
     private Range _replacementRange;
 
+    private string? _textTemplate;
+
     /// <summary>
     ///     Initializes a new instance of the <see cref="Label" /> class.
     /// </summary>
@@ -78,6 +81,15 @@ public partial class Label : Base, ILabel, IFontProvider
 
             _replacementRange = GetRangeForFormatArgument(value, 0);
             _formatString = value;
+        }
+    }
+
+    public override void Think()
+    {
+        base.Think();
+        if (_textTemplate != null)
+        {
+            Text = VariableTextResolver.Resolve(_textTemplate);
         }
     }
 
@@ -425,7 +437,7 @@ public partial class Label : Base, ILabel, IFontProvider
             serializedProperties.Add(nameof(FontSize), null);
         }
         serializedProperties.Add("TextScale", _textElement.GetScale());
-
+        serializedProperties.Add("Text", _textTemplate ?? Text);
         return base.FixJson(serializedProperties);
     }
 
@@ -475,6 +487,12 @@ public partial class Label : Base, ILabel, IFontProvider
         if (obj["AutoSizeToContents"] != null)
         {
             _autoSizeToContents = (bool)obj["AutoSizeToContents"];
+        }
+
+        if (obj["Text"] != null)
+        {
+            _textTemplate = (string)obj["Text"];
+            Text = VariableTextResolver.Resolve(_textTemplate);
         }
 
         var tokenFont = obj["Font"];

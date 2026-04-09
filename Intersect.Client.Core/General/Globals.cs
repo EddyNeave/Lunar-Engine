@@ -7,6 +7,7 @@ using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Graphics;
 using Intersect.Client.Framework.Input;
 using Intersect.Client.Framework.Sys;
+using Intersect.Client.Framework.General;
 using Intersect.Client.Items;
 using Intersect.Client.Maps;
 using Intersect.Client.Plugins.Interfaces;
@@ -257,4 +258,10 @@ public static partial class Globals
     }
 
     public static Entity? GetEntity(Guid id, EntityType type) => TryGetEntity(type, id, out var entity) ? entity : null;
+    
+    public static Dictionary<string, string> VariableValues
+    {
+        get => VariableTextResolver.VariableValues;
+        set => VariableTextResolver.VariableValues = value;
+    }
 }

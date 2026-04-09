@@ -2377,5 +2377,10 @@ internal sealed partial class PacketHandler
                 break;
         }
     }
+    
+    public void HandlePacket(IPacketSender packetSender, VariableValuesPacket packet)
+    {
+        Globals.VariableValues = packet.Values;
+    }
 
 }

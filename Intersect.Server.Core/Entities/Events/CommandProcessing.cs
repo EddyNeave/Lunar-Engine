@@ -1975,7 +1975,7 @@ public static partial class CommandProcessing
         {
             if (changed)
             {
-
+                PacketSender.SendVariableValues(player);
             }
 
             // Set the party member switches too if Sync Party enabled!
@@ -2201,6 +2201,7 @@ public static partial class CommandProcessing
             if (changed)
             {
                 player.StartCommonEventsWithTrigger(CommonEventTrigger.PlayerVariableChange, "", command.VariableId.ToString());
+                PacketSender.SendVariableValues(player);
             }
 
             // Set the party member switches too if Sync Party enabled!
@@ -2302,6 +2303,7 @@ public static partial class CommandProcessing
             if (changed)
             {
                 player.StartCommonEventsWithTrigger(CommonEventTrigger.PlayerVariableChange, "", command.VariableId.ToString());
+                PacketSender.SendVariableValues(player);
             }
 
             // Set the party member switches too if Sync Party enabled!

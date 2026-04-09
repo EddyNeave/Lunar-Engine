@@ -7259,13 +7259,13 @@ public partial class Player : Entity
                         case CommonEventTrigger.SlashCommand:
                         case CommonEventTrigger.Autorun:
                         case CommonEventTrigger.EquipChange:
+                        case CommonEventTrigger.InventoryChanged:
+                        case CommonEventTrigger.MapChanged:
+                        case CommonEventTrigger.LevelDown:
                         case CommonEventTrigger.PlayerVariableChange:
                         case CommonEventTrigger.ServerVariableChange:
                         case CommonEventTrigger.GuildVariableChange:
-                        case CommonEventTrigger.InventoryChanged:
-                        case CommonEventTrigger.MapChanged:
                         case CommonEventTrigger.UserVariableChange:
-                        case CommonEventTrigger.LevelDown:
                             break;
 
                         case CommonEventTrigger.PVPKill:
