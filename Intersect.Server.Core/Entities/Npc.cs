@@ -847,366 +847,366 @@ public partial class Npc : Entity
                         return;
                     }
                 }
-
                 var fleeing = IsFleeing();
 
                 if (MoveTimer < Timing.Global.Milliseconds)
                 {
-                    var targetMap = Guid.Empty;
-                    var targetX = 0;
-                    var targetY = 0;
-                    var targetZ = 0;
-                    
                     if (FollowTarget != null)
                     {
                         UpdateFollowBehavior(timeMs);
-                        return; // Skip all combat/wander AI
                     }
-                    
-                    if (tempTarget != null && (tempTarget.IsDead || !InRangeOf(tempTarget, Options.Instance.Map.MapWidth * 2) || !CanTarget(tempTarget)))
+                    else
                     {
-                        _ = TryFindNewTarget(Timing.Global.Milliseconds, tempTarget.Id, !CanTarget(tempTarget));
-                        tempTarget = Target;
-                    }
-
-                    //TODO Clear Damage Map if out of combat (target is null and combat timer is to the point that regen has started)
-                    if (tempTarget != null && (Options.Instance.Npc.ResetIfCombatTimerExceeded && Timing.Global.Milliseconds > CombatTimer))
-                    {
-                        if (CheckForResetLocation(true))
+                        var targetMap = Guid.Empty;
+                        var targetX = 0;
+                        var targetY = 0;
+                        var targetZ = 0;
+                        
+                        if (tempTarget != null && (tempTarget.IsDead || !InRangeOf(tempTarget, Options.Instance.Map.MapWidth * 2) || !CanTarget(tempTarget)))
                         {
-                            if (Target != tempTarget)
+                            _ = TryFindNewTarget(Timing.Global.Milliseconds, tempTarget.Id, !CanTarget(tempTarget));
+                            tempTarget = Target;
+                        }
+
+                        //TODO Clear Damage Map if out of combat (target is null and combat timer is to the point that regen has started)
+                        if (tempTarget != null && (Options.Instance.Npc.ResetIfCombatTimerExceeded && Timing.Global.Milliseconds > CombatTimer))
+                        {
+                            if (CheckForResetLocation(true))
                             {
-                                PacketSender.SendNpcAggressionToProximity(this);
+                                if (Target != tempTarget)
+                                {
+                                    PacketSender.SendNpcAggressionToProximity(this);
+                                }
+
+                                return;
                             }
-
-                            return;
-                        }
-                    }
-
-                    // Are we resetting? If so, regenerate completely!
-                    if (mResetting)
-                    {
-                        var distance = GetDistanceTo(AggroCenterMap, AggroCenterX, AggroCenterY);
-                        // Have we reached our destination? If so, clear it.
-                        if (distance < 1)
-                        {
-                            ResetAggroCenter(out targetMap);
                         }
 
-                        Reset(Options.Instance.Npc.ContinuouslyResetVitalsAndStatuses);
-                        tempTarget = Target;
-
-                        if (distance != mResetDistance)
+                        // Are we resetting? If so, regenerate completely!
+                        if (mResetting)
                         {
-                            mResetDistance = distance;
-                        }
-                        else
-                        {
-                            // Something is fishy here.. We appear to be stuck in a reset loop?
-                            // Give it a few more attempts and reset the NPC's center if we're stuck!
-                            mResetCounter++;
-                            if (mResetCounter > mResetMax)
+                            var distance = GetDistanceTo(AggroCenterMap, AggroCenterX, AggroCenterY);
+                            // Have we reached our destination? If so, clear it.
+                            if (distance < 1)
                             {
                                 ResetAggroCenter(out targetMap);
-                                mResetCounter = 0;
-                                mResetDistance = 0;
                             }
-                        }
-                    }
 
-                    //Check if there is a target, if so, run their ass down.
-                    if (tempTarget != null && CanTarget(tempTarget))
-                    {
-                        if (!tempTarget.IsDead && CanAttack(tempTarget, null))
-                        {
-                            targetMap = tempTarget.MapId;
-                            targetX = tempTarget.X;
-                            targetY = tempTarget.Y;
-                            targetZ = tempTarget.Z;
-                        }
-                    }
-                    else //Find a target if able
-                    {
-                        // Check if attack on sight or have other npc's to target
-                        TryFindNewTarget(timeMs);
-                        tempTarget = Target;
-                    }
+                            Reset(Options.Instance.Npc.ContinuouslyResetVitalsAndStatuses);
+                            tempTarget = Target;
 
-                    if (targetMap != Guid.Empty)
-                    {
-                        //Check if target map is on one of the surrounding maps, if not then we are not even going to look.
-                        if (targetMap != MapId)
-                        {
-                            var found = false;
-                            foreach (var map in MapController.Get(MapId).SurroundingMaps)
+                            if (distance != mResetDistance)
                             {
-                                if (map.Id == targetMap)
+                                mResetDistance = distance;
+                            }
+                            else
+                            {
+                                // Something is fishy here.. We appear to be stuck in a reset loop?
+                                // Give it a few more attempts and reset the NPC's center if we're stuck!
+                                mResetCounter++;
+                                if (mResetCounter > mResetMax)
                                 {
-                                    found = true;
-                                    break;
+                                    ResetAggroCenter(out targetMap);
+                                    mResetCounter = 0;
+                                    mResetDistance = 0;
                                 }
                             }
-                            if (!found)
-                            {
-                                targetMap = Guid.Empty;
-                            }
-                        }
-                    }
-
-                    if (targetMap != Guid.Empty)
-                    {
-                        if (mPathFinder.GetTarget() != null)
-                        {
-                            if (targetMap != mPathFinder.GetTarget().TargetMapId ||
-                                targetX != mPathFinder.GetTarget().TargetX ||
-                                targetY != mPathFinder.GetTarget().TargetY)
-                            {
-                                mPathFinder.SetTarget(null);
-                            }
                         }
 
-                        if (mPathFinder.GetTarget() == null)
+                        //Check if there is a target, if so, run their ass down.
+                        if (tempTarget != null && CanTarget(tempTarget))
                         {
-                            mPathFinder.SetTarget(new PathfinderTarget(targetMap, targetX, targetY, targetZ));
-
-                            if (tempTarget != null && tempTarget != Target)
+                            if (!tempTarget.IsDead && CanAttack(tempTarget, null))
                             {
-                                tempTarget = Target;
+                                targetMap = tempTarget.MapId;
+                                targetX = tempTarget.X;
+                                targetY = tempTarget.Y;
+                                targetZ = tempTarget.Z;
                             }
                         }
-
-                    }
-
-                    if (mPathFinder.GetTarget() != null && Descriptor.Movement != (int)NpcMovement.Static)
-                    {
-                        TryCastSpells();
-                        // TODO: Make resetting mobs actually return to their starting location.
-                        if ((!mResetting && !IsOneBlockAway(
-                            mPathFinder.GetTarget().TargetMapId, mPathFinder.GetTarget().TargetX,
-                            mPathFinder.GetTarget().TargetY, mPathFinder.GetTarget().TargetZ
-                        )) ||
-                        (mResetting && GetDistanceTo(AggroCenterMap, AggroCenterX, AggroCenterY) != 0)
-                        )
+                        else //Find a target if able
                         {
-                            var pathFinderResult = mPathFinder.Update(timeMs);
-                            switch (pathFinderResult.Type)
+                            // Check if attack on sight or have other npc's to target
+                            TryFindNewTarget(timeMs);
+                            tempTarget = Target;
+                        }
+
+                        if (targetMap != Guid.Empty)
+                        {
+                            //Check if target map is on one of the surrounding maps, if not then we are not even going to look.
+                            if (targetMap != MapId)
                             {
-                                case PathfinderResultType.Success:
-                                    var nextPathDirection = mPathFinder.GetMove();
-                                    if (nextPathDirection > Direction.None)
+                                var found = false;
+                                foreach (var map in MapController.Get(MapId).SurroundingMaps)
+                                {
+                                    if (map.Id == targetMap)
                                     {
-                                        if (fleeing)
-                                        {
-                                            nextPathDirection = nextPathDirection switch
-                                            {
-                                                Direction.Up => Direction.Down,
-                                                Direction.Down => Direction.Up,
-                                                Direction.Left => Direction.Right,
-                                                Direction.Right => Direction.Left,
-                                                Direction.UpLeft => Direction.UpRight,
-                                                Direction.UpRight => Direction.UpLeft,
-                                                Direction.DownRight => Direction.DownLeft,
-                                                Direction.DownLeft => Direction.DownRight,
-                                                _ => nextPathDirection,
-                                            };
-                                        }
+                                        found = true;
+                                        break;
+                                    }
+                                }
+                                if (!found)
+                                {
+                                    targetMap = Guid.Empty;
+                                }
+                            }
+                        }
 
-                                        if (CanMoveInDirection(nextPathDirection, out var blockerType, out var blockingEntityType, out var blockingEntity) || blockerType == MovementBlockerType.Slide)
+                        if (targetMap != Guid.Empty)
+                        {
+                            if (mPathFinder.GetTarget() != null)
+                            {
+                                if (targetMap != mPathFinder.GetTarget().TargetMapId ||
+                                    targetX != mPathFinder.GetTarget().TargetX ||
+                                    targetY != mPathFinder.GetTarget().TargetY)
+                                {
+                                    mPathFinder.SetTarget(null);
+                                }
+                            }
+
+                            if (mPathFinder.GetTarget() == null)
+                            {
+                                mPathFinder.SetTarget(new PathfinderTarget(targetMap, targetX, targetY, targetZ));
+
+                                if (tempTarget != null && tempTarget != Target)
+                                {
+                                    tempTarget = Target;
+                                }
+                            }
+
+                        }
+
+                        if (mPathFinder.GetTarget() != null && Descriptor.Movement != (int)NpcMovement.Static)
+                        {
+                            TryCastSpells();
+                            // TODO: Make resetting mobs actually return to their starting location.
+                            if ((!mResetting && !IsOneBlockAway(
+                                mPathFinder.GetTarget().TargetMapId, mPathFinder.GetTarget().TargetX,
+                                mPathFinder.GetTarget().TargetY, mPathFinder.GetTarget().TargetZ
+                            )) ||
+                            (mResetting && GetDistanceTo(AggroCenterMap, AggroCenterX, AggroCenterY) != 0)
+                            )
+                            {
+                                var pathFinderResult = mPathFinder.Update(timeMs);
+                                switch (pathFinderResult.Type)
+                                {
+                                    case PathfinderResultType.Success:
+                                        var nextPathDirection = mPathFinder.GetMove();
+                                        if (nextPathDirection > Direction.None)
                                         {
-                                            //check if NPC is snared or stunned
-                                            // ReSharper disable once LoopCanBeConvertedToQuery
-                                            foreach (var status in CachedStatuses)
+                                            if (fleeing)
                                             {
-                                                // ReSharper disable once MergeIntoLogicalPattern
-                                                if (status.Type == SpellEffect.Stun ||
-                                                    status.Type == SpellEffect.Snare ||
-                                                    status.Type == SpellEffect.Sleep)
+                                                nextPathDirection = nextPathDirection switch
                                                 {
-                                                    return;
-                                                }
+                                                    Direction.Up => Direction.Down,
+                                                    Direction.Down => Direction.Up,
+                                                    Direction.Left => Direction.Right,
+                                                    Direction.Right => Direction.Left,
+                                                    Direction.UpLeft => Direction.UpRight,
+                                                    Direction.UpRight => Direction.UpLeft,
+                                                    Direction.DownRight => Direction.DownLeft,
+                                                    Direction.DownLeft => Direction.DownRight,
+                                                    _ => nextPathDirection,
+                                                };
                                             }
 
-                                            Move(nextPathDirection, null);
-                                        }
-                                        else
-                                        {
-                                            var blockerAttacked = false;
-                                            if (!fleeing && blockerType == MovementBlockerType.Entity &&
-                                                blockingEntityType == EntityType.Player)
+                                            if (CanMoveInDirection(nextPathDirection, out var blockerType, out var blockingEntityType, out var blockingEntity) || blockerType == MovementBlockerType.Slide)
                                             {
-                                                if (!(blockingEntity?.IsDisposed ?? true))
+                                                //check if NPC is snared or stunned
+                                                // ReSharper disable once LoopCanBeConvertedToQuery
+                                                foreach (var status in CachedStatuses)
                                                 {
-                                                    if (CanAttack(blockingEntity, default))
+                                                    // ReSharper disable once MergeIntoLogicalPattern
+                                                    if (status.Type == SpellEffect.Stun ||
+                                                        status.Type == SpellEffect.Snare ||
+                                                        status.Type == SpellEffect.Sleep)
                                                     {
-                                                        var blockingEntityName = blockingEntity?.Name ?? "Unknown Blocking Entity";
-                                                        var targetName = Target?.Name ?? "Unknown Target";
-                                                        ApplicationContext.Context.Value?.Logger.LogDebug($"Trying to attack {blockingEntityName} because they're blocking the path to {targetName}");
-                                                        ChangeDir(nextPathDirection);
-                                                        TryAttack(blockingEntity);
-                                                        blockerAttacked = true;
+                                                        return;
                                                     }
                                                 }
-                                            }
 
-                                            if (!blockerAttacked)
+                                                Move(nextPathDirection, null);
+                                            }
+                                            else
                                             {
-                                                mPathFinder.PathFailed(timeMs);
-                                            }
-                                        }
+                                                var blockerAttacked = false;
+                                                if (!fleeing && blockerType == MovementBlockerType.Entity &&
+                                                    blockingEntityType == EntityType.Player)
+                                                {
+                                                    if (!(blockingEntity?.IsDisposed ?? true))
+                                                    {
+                                                        if (CanAttack(blockingEntity, default))
+                                                        {
+                                                            var blockingEntityName = blockingEntity?.Name ?? "Unknown Blocking Entity";
+                                                            var targetName = Target?.Name ?? "Unknown Target";
+                                                            ApplicationContext.Context.Value?.Logger.LogDebug($"Trying to attack {blockingEntityName} because they're blocking the path to {targetName}");
+                                                            ChangeDir(nextPathDirection);
+                                                            TryAttack(blockingEntity);
+                                                            blockerAttacked = true;
+                                                        }
+                                                    }
+                                                }
 
-                                        // Are we resetting?
-                                        if (mResetting)
-                                        {
-                                            // Have we reached our destination? If so, clear it.
-                                            if (GetDistanceTo(AggroCenterMap, AggroCenterX, AggroCenterY) == 0)
+                                                if (!blockerAttacked)
+                                                {
+                                                    mPathFinder.PathFailed(timeMs);
+                                                }
+                                            }
+
+                                            // Are we resetting?
+                                            if (mResetting)
                                             {
-                                                targetMap = Guid.Empty;
+                                                // Have we reached our destination? If so, clear it.
+                                                if (GetDistanceTo(AggroCenterMap, AggroCenterX, AggroCenterY) == 0)
+                                                {
+                                                    targetMap = Guid.Empty;
 
-                                                // Reset our aggro center so we can get "pulled" again.
-                                                AggroCenterMap = null;
-                                                AggroCenterX = 0;
-                                                AggroCenterY = 0;
-                                                AggroCenterZ = 0;
-                                                mPathFinder?.SetTarget(null);
-                                                mResetting = false;
+                                                    // Reset our aggro center so we can get "pulled" again.
+                                                    AggroCenterMap = null;
+                                                    AggroCenterX = 0;
+                                                    AggroCenterY = 0;
+                                                    AggroCenterZ = 0;
+                                                    mPathFinder?.SetTarget(null);
+                                                    mResetting = false;
+                                                }
                                             }
                                         }
-                                    }
-                                    break;
-
-                                case PathfinderResultType.OutOfRange:
-                                case PathfinderResultType.NoPathToTarget:
-                                    TryFindNewTarget(timeMs, tempTarget?.Id ?? Guid.Empty, true);
-                                    tempTarget = Target;
-                                    targetMap = Guid.Empty;
-                                    break;
-
-                                case PathfinderResultType.Failure:
-                                    targetMap = Guid.Empty;
-                                    TryFindNewTarget(timeMs, tempTarget?.Id ?? Guid.Empty, true);
-                                    tempTarget = Target;
-                                    break;
-
-                                case PathfinderResultType.Wait:
-                                    targetMap = Guid.Empty;
-                                    break;
-
-                                default:
-                                    throw new ArgumentOutOfRangeException();
-                            }
-                        }
-                        else
-                        {
-                            var fleed = false;
-                            if (tempTarget != null && fleeing)
-                            {
-                                var dir = DirectionToTarget(tempTarget);
-                                switch (dir)
-                                {
-                                    case Direction.Up:
-                                        dir = Direction.Down;
-
-                                        break;
-                                    case Direction.Down:
-                                        dir = Direction.Up;
-
-                                        break;
-                                    case Direction.Left:
-                                        dir = Direction.Right;
-
-                                        break;
-                                    case Direction.Right:
-                                        dir = Direction.Left;
-
-                                        break;
-                                    case Direction.UpLeft:
-                                        dir = Direction.UpRight;
-
-                                        break;
-                                    case Direction.UpRight:
-                                        dir = Direction.UpLeft;
                                         break;
 
-                                    case Direction.DownRight:
-                                        dir = Direction.DownLeft;
-
+                                    case PathfinderResultType.OutOfRange:
+                                    case PathfinderResultType.NoPathToTarget:
+                                        TryFindNewTarget(timeMs, tempTarget?.Id ?? Guid.Empty, true);
+                                        tempTarget = Target;
+                                        targetMap = Guid.Empty;
                                         break;
-                                    case Direction.DownLeft:
-                                        dir = Direction.DownRight;
 
+                                    case PathfinderResultType.Failure:
+                                        targetMap = Guid.Empty;
+                                        TryFindNewTarget(timeMs, tempTarget?.Id ?? Guid.Empty, true);
+                                        tempTarget = Target;
                                         break;
-                                }
 
-                                if (CanMoveInDirection(dir, out var blockerType, out _) || blockerType == MovementBlockerType.Slide)
-                                {
-                                    //check if NPC is snared or stunned
-                                    foreach (var status in CachedStatuses)
-                                    {
-                                        if (status.Type == SpellEffect.Stun ||
-                                            status.Type == SpellEffect.Snare ||
-                                            status.Type == SpellEffect.Sleep)
-                                        {
-                                            return;
-                                        }
-                                    }
+                                    case PathfinderResultType.Wait:
+                                        targetMap = Guid.Empty;
+                                        break;
 
-                                    Move(dir, null);
-                                    fleed = true;
+                                    default:
+                                        throw new ArgumentOutOfRangeException();
                                 }
                             }
-
-                            if (!fleed)
+                            else
                             {
-                                if (tempTarget != null)
+                                var fleed = false;
+                                if (tempTarget != null && fleeing)
                                 {
-                                    if (Dir != DirectionToTarget(tempTarget) && DirectionToTarget(tempTarget) != Direction.None)
+                                    var dir = DirectionToTarget(tempTarget);
+                                    switch (dir)
                                     {
-                                        ChangeDir(DirectionToTarget(tempTarget));
+                                        case Direction.Up:
+                                            dir = Direction.Down;
+
+                                            break;
+                                        case Direction.Down:
+                                            dir = Direction.Up;
+
+                                            break;
+                                        case Direction.Left:
+                                            dir = Direction.Right;
+
+                                            break;
+                                        case Direction.Right:
+                                            dir = Direction.Left;
+
+                                            break;
+                                        case Direction.UpLeft:
+                                            dir = Direction.UpRight;
+
+                                            break;
+                                        case Direction.UpRight:
+                                            dir = Direction.UpLeft;
+                                            break;
+
+                                        case Direction.DownRight:
+                                            dir = Direction.DownLeft;
+
+                                            break;
+                                        case Direction.DownLeft:
+                                            dir = Direction.DownRight;
+
+                                            break;
                                     }
-                                    else
+
+                                    if (CanMoveInDirection(dir, out var blockerType, out _) || blockerType == MovementBlockerType.Slide)
                                     {
-                                        if (tempTarget.IsDisposed)
+                                        //check if NPC is snared or stunned
+                                        foreach (var status in CachedStatuses)
                                         {
-                                            TryFindNewTarget(timeMs);
-                                            tempTarget = Target;
+                                            if (status.Type == SpellEffect.Stun ||
+                                                status.Type == SpellEffect.Snare ||
+                                                status.Type == SpellEffect.Sleep)
+                                            {
+                                                return;
+                                            }
+                                        }
+
+                                        Move(dir, null);
+                                        fleed = true;
+                                    }
+                                }
+
+                                if (!fleed)
+                                {
+                                    if (tempTarget != null)
+                                    {
+                                        if (Dir != DirectionToTarget(tempTarget) && DirectionToTarget(tempTarget) != Direction.None)
+                                        {
+                                            ChangeDir(DirectionToTarget(tempTarget));
                                         }
                                         else
                                         {
-                                            if (CanAttack(tempTarget, null))
+                                            if (tempTarget.IsDisposed)
                                             {
-                                                TryAttack(tempTarget);
+                                                TryFindNewTarget(timeMs);
+                                                tempTarget = Target;
+                                            }
+                                            else
+                                            {
+                                                if (CanAttack(tempTarget, null))
+                                                {
+                                                    TryAttack(tempTarget);
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
                         }
-                    }
 
-                    CheckForResetLocation();
+                        CheckForResetLocation();
 
-                    if (targetMap != Guid.Empty || LastRandomMove >= Timing.Global.Milliseconds || IsCasting)
-                    {
-                        return;
-                    }
-
-                    switch (Descriptor.Movement)
-                    {
-                        case (int)NpcMovement.StandStill:
-                            LastRandomMove = Timing.Global.Milliseconds + Randomization.Next(1000, 3000);
+                        if (targetMap != Guid.Empty || LastRandomMove >= Timing.Global.Milliseconds || IsCasting)
+                        {
                             return;
-                        case (int)NpcMovement.TurnRandomly:
-                            ChangeDir(Randomization.NextDirection());
-                            LastRandomMove = Timing.Global.Milliseconds + Randomization.Next(1000, 3000);
-                            return;
-                        case (int)NpcMovement.MoveRandomly:
-                            MoveRandomly();
-                            break;
-                    }
+                        }
 
-                    if (fleeing)
-                    {
-                        LastRandomMove = Timing.Global.Milliseconds + (long)GetMovementTime();
+                        switch (Descriptor.Movement)
+                        {
+                            case (int)NpcMovement.StandStill:
+                                LastRandomMove = Timing.Global.Milliseconds + Randomization.Next(1000, 3000);
+                                return;
+                            case (int)NpcMovement.TurnRandomly:
+                                ChangeDir(Randomization.NextDirection());
+                                LastRandomMove = Timing.Global.Milliseconds + Randomization.Next(1000, 3000);
+                                return;
+                            case (int)NpcMovement.MoveRandomly:
+                                MoveRandomly();
+                                break;
+                        }
+
+                        if (fleeing)
+                        {
+                            LastRandomMove = Timing.Global.Milliseconds + (long)GetMovementTime();
+                        }
                     }
                 }
 
@@ -1246,7 +1246,7 @@ public partial class Npc : Entity
         var target = FollowTarget;
 
         // Validate - stop following if player is gone/dead/different instance
-        if (target == null || target.IsDisposed || target.IsDead || target.MapInstanceId != MapInstanceId)
+        if (target == null || target.IsDisposed || target.IsDead || target.MapInstanceId != MapInstanceId || Descriptor.Aggressive)
         {
             ClearFollowTarget();
             return;

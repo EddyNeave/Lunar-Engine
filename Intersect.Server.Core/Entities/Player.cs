@@ -7780,7 +7780,7 @@ public partial class Player : Entity
 
     public void AddFollowerNpc(Npc npc)
     {
-        if (npc == null || !npc.Descriptor.Followable) return;
+        if (npc == null ) return;
         npc.SetFollowTarget(this);
         if (!FollowerNpcs.Contains(npc))
         {

@@ -6,12 +6,6 @@ namespace Intersect.Server.Migrations.Sqlite.Game
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<bool>(
-                name: "Followable",
-                table: "Npcs",
-                nullable: false,
-                defaultValue: false
-            );
 
             migrationBuilder.AddColumn<int>(
                 name: "FollowTeleportRange",
@@ -23,10 +17,6 @@ namespace Intersect.Server.Migrations.Sqlite.Game
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "Followable",
-                table: "Npcs"
-            );
 
             migrationBuilder.DropColumn(
                 name: "FollowTeleportRange",

@@ -975,12 +975,12 @@ public static partial class CommandProcessing
     {
         var npc = player.SpawnedNpcs
             .OfType<Npc>()
-            .LastOrDefault(n => !n.IsDisposed && n.Despawnable && n.Descriptor.Followable && n.FollowTarget == null);
+            .LastOrDefault(n => !n.IsDisposed && !n.Descriptor.Aggressive && n.FollowTarget == null);
 
-        if (npc != null)
-        {
-            player.AddFollowerNpc(npc);
-        }
+            if (npc != null)
+            {
+                player.AddFollowerNpc(npc);
+            }
     }
 
     private static void ProcessCommand(
