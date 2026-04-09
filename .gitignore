@@ -222,3 +222,4 @@ packages/
 
 Custom*.props
 /Builds
+/Intersect.Editor/Builds

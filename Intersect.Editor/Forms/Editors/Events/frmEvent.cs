@@ -1406,8 +1406,14 @@ public partial class FrmEvent : Form
                 break;
             case EventCommandType.Fade:
                 cmdWindow = new EventCommand_ScreenFade((ScreenFadeCommand)command, this);
-
                 break;
+
+            case EventCommandType.StartNpcFollow:
+                break;
+
+            case EventCommandType.StopNpcFollow:
+                break;
+                
             default:
                 throw new ArgumentOutOfRangeException();
         }

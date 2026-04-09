@@ -2406,6 +2406,8 @@ Tick timer saved in server config.json.";
             {"resetstatallocations", @"Reset Stat Point Allocations"},
             {"castspellon", @"Cast Spell On"},
             {"fade", @"Screen Fade"},
+            {"startnpcfollow", @"NPC Follow: Start"},
+            {"stopnpcfollow", @"NPC Follow: Stop"},
         };
 
     }
