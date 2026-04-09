@@ -16,6 +16,7 @@ Escort quests
 Pets/companions
 Any friendly NPC that should accompany the player
 
+## Dynamic variables on gui elements without the need to modify client source code
 Also added the ability to use "Text" property in gui labels to display text and get dynamic variable updates from player variables for things like custom skill levels
 
 ## Known Issues
