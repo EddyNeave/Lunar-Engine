@@ -1240,6 +1240,17 @@ public partial class Npc : Entity
         }
     }
 
+    public void ResetFollowState()
+    {
+        mPathFinder.SetTarget(null);
+        AggroCenterMap = null;
+        AggroCenterX = 0;
+        AggroCenterY = 0;
+        AggroCenterZ = 0;
+        mResetting = false;
+        Target = null;
+    }
+    
     //Follow player movement
     private void UpdateFollowBehavior(long timeMs)
     {

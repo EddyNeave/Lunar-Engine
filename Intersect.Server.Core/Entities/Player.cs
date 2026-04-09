@@ -2123,7 +2123,7 @@ public partial class Player : Entity
 
             return;
         }
-
+        
         // If we've changed instances, send data to instance entities/entities to player
         if (onNewInstance || forceInstanceChange)
         {
@@ -2187,6 +2187,39 @@ public partial class Player : Entity
         }
 
         UnequipInvalidItems();
+        
+        foreach (var follower in FollowerNpcs.ToList())
+        {
+            if (follower == null || follower.IsDisposed)
+            {
+                FollowerNpcs.Remove(follower);
+                continue;
+            }
+
+            // Remove from current map instance manually first
+            if (MapController.TryGetInstanceFromMap(follower.MapId, follower.MapInstanceId, out var oldInstance))
+            {
+                oldInstance.RemoveEntity(follower);
+            }
+
+            // Update instance to match player BEFORE warp
+            follower.MapInstanceId = MapInstanceId;
+
+            // Now warp - instance already exists because player warp created it above
+            follower.X = (int)newX;
+            follower.Y = (int)newY;
+            follower.Z = zOverride;
+            follower.Dir = newDir;
+            follower.MapId = newMapId;
+
+            if (MapController.TryGetInstanceFromMap(newMapId, MapInstanceId, out var newInstance))
+            {
+                newInstance.AddEntity(follower);
+                PacketSender.SendEntityDataToProximity(follower);
+            }
+
+            follower.ResetFollowState();
+        }
     }
 
     /// <summary>
