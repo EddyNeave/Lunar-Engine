@@ -2530,6 +2530,12 @@ public partial class Entity : IEntity
                                     break;
                             }
 
+                            // Check entity passable for followers
+                            if (en.Value.Passable)
+                            {
+                                continue;
+                            }
+
                             blockedBy = en.Value;
 
                             return -6;

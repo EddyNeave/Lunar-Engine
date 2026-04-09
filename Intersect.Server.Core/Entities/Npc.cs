@@ -39,12 +39,17 @@ public partial class Npc : Entity
         AggroCenterMap = null;
         mResetting = false;
         mPathFinder.SetTarget(null);
+        Passable = true;
+
+        PacketSender.SendChatMsg(player, $"[Follow] Passable={Passable}", ChatMessageType.Notice, Color.White);
+        PacketSender.SendNpcAggressionToProximity(this);
     }
 
     public void ClearFollowTarget()
     {
         FollowTarget = null;
         mPathFinder.SetTarget(null);
+        Passable = false;
     }
     //Spell casting
     public long CastFreq;
@@ -1240,6 +1245,11 @@ public partial class Npc : Entity
         }
     }
 
+    protected override bool CanPassPlayer(MapController targetMap)
+    {
+        return FollowTarget != null;
+    }
+
     public void ResetFollowState()
     {
         mPathFinder.SetTarget(null);
@@ -1248,14 +1258,13 @@ public partial class Npc : Entity
         AggroCenterY = 0;
         AggroCenterZ = 0;
         mResetting = false;
-        Target = null;
     }
-    
+
     //Follow player movement
     private void UpdateFollowBehavior(long timeMs)
     {
         var target = FollowTarget;
-
+        
         // Validate - stop following if player is gone/dead/different instance
         if (target == null || target.IsDisposed || target.IsDead || target.MapInstanceId != MapInstanceId || Descriptor.Aggressive)
         {
@@ -1442,6 +1451,12 @@ public partial class Npc : Entity
 
     public bool CanPlayerAttack(Player en)
     {
+        // Followers cannot be attacked
+        if (FollowTarget != null)
+        {
+            return false;
+        }
+
         //Check to see if the npc is a friend/protector...
         if (IsAllyOf(en))
         {
@@ -1470,6 +1485,11 @@ public partial class Npc : Entity
 
                 return !otherNpc.CanNpcCombat(this);
             case Player otherPlayer:
+                if (FollowTarget == otherPlayer)
+                {
+                    return true;
+                }
+
                 var conditionLists = Descriptor.PlayerFriendConditions;
                 if ((conditionLists?.Count ?? 0) == 0)
                 {
@@ -1754,6 +1774,11 @@ public partial class Npc : Entity
     /// <returns>The NPC's aggression towards the player.</returns>
     public NpcAggression GetAggression(Player player)
     {
+        if (FollowTarget != null)
+        {
+            return FollowTarget == player ? NpcAggression.Guard : NpcAggression.Neutral;
+        }
+
         if (this.Target != null)
         {
             return NpcAggression.Aggressive;
