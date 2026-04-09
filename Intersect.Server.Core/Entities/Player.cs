@@ -2187,7 +2187,7 @@ public partial class Player : Entity
         }
 
         UnequipInvalidItems();
-        
+
         foreach (var follower in FollowerNpcs.ToList())
         {
             if (follower == null || follower.IsDisposed)
@@ -2215,10 +2215,10 @@ public partial class Player : Entity
             if (MapController.TryGetInstanceFromMap(newMapId, MapInstanceId, out var newInstance))
             {
                 newInstance.AddEntity(follower);
-                PacketSender.SendEntityDataToProximity(follower);
             }
 
             follower.ResetFollowState();
+            PacketSender.SendEntityDataToProximity(follower);
         }
     }
 
